@@ -1,0 +1,82 @@
+name: "Publish to Zenodo"
+description: "Publish a set of files to Zenodo"
+inputs:
+    files:
+        description: "List of files or glob patterns to publish"
+        required: true
+    zenodo_token:
+        description: "Zenodo access token"
+        required: true
+    github_token:
+        description: "GitHub access token"
+        required: true
+    sandbox:
+        description: "Publish to Zenodo sandbox"
+        required: false
+        default: "true"
+    publish:
+        description: "Publish the record"
+        required: false
+        default: "false"
+    concept:
+        description: "Create the new deposition as a new version in this concept"
+        required: false
+        default: ''
+    fields:
+        description: "Additional Zenodo fields"
+        required: false
+        default: "{'communities': [{'identifier': 'ipcc-ar7'}]}"
+    upsert_doi:
+        description: "Upsert DOI"
+        required: false
+        default: "false"
+    upsert_location:
+        description: "Upsert location"
+        required: false
+        default: doi
+    verbose:
+        description: "Verbose output"
+        required: false
+        default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout the contents of your repository
+      uses: actions/checkout@v4
+
+    - name: Get file list
+      uses: tj-actions/glob@v22
+      id: globber
+      with:
+        files: ${{ inputs.files }}
+
+    - name: Print the list of files
+      run: echo "${{ steps.globber.outputs.paths }}"
+      shell: bash
+
+    - name: Create a zenodo metadata file from CITATION.cff
+      uses: citation-file-format/cffconvert-github-action@2.0.0
+      with:
+        args: "-f zenodo -o .zenodo.json"
+
+    - name: Add fields to Zenodo metadata
+      uses: restackio/update-json-file-action@2.1
+      with:
+        file: .zenodo.json
+        fields: ${{ inputs.fields }}
+
+    - name: Create a draft snapshot of your repository figure content.
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+        ZENODO_SANDBOX_ACCESS_TOKEN: ${{ inputs.zenodo_token }}
+      uses: zenodraft/action@0.13.3
+      with:
+        concept: ${{ inputs.concept }}
+        filenames: "${{ steps.globber.outputs.paths }}"
+        metadata: .zenodo.json
+        publish: ${{ inputs.publish }}
+        sandbox: ${{ inputs.sandbox }}
+        upsert-doi: ${{ inputs.upsert_doi }}
+        upsert-location: ${{ inputs.upsert_location }}
+        verbose: ${{ inputs.verbose }}
