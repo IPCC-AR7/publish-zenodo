@@ -22,10 +22,6 @@ inputs:
         description: "Create the new deposition as a new version in this concept"
         required: false
         default: ''
-    fields:
-        description: "Additional Zenodo fields"
-        required: false
-        default: "{'communities': [{'identifier': 'ipcc-ar7'}]}"
     upsert_doi:
         description: "Upsert DOI"
         required: false
@@ -59,12 +55,6 @@ runs:
       uses: citation-file-format/cffconvert-github-action@2.0.0
       with:
         args: "-f zenodo -o .zenodo.json"
-
-    - name: Add fields to Zenodo metadata
-      uses: restackio/update-json-file-action@2.1
-      with:
-        file: .zenodo.json
-        fields: "${{ inputs.fields }}"
 
     - name: Create a draft snapshot of your repository figure content.
       env:
