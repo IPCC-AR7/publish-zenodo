@@ -4,6 +4,10 @@ inputs:
     files:
         description: "List of files or glob patterns to publish"
         required: true
+    citation_file:
+        description: "CITATION.cff file"
+        required: true
+        default: "CITATION.cff"
     zenodo_token:
         description: "Zenodo access token"
         required: true
