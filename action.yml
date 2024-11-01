@@ -64,7 +64,7 @@ runs:
       uses: restackio/update-json-file-action@2.1
       with:
         file: .zenodo.json
-        fields: ${{ inputs.fields }}
+        fields: "${{ inputs.fields }}"
 
     - name: Create a draft snapshot of your repository figure content.
       env:
