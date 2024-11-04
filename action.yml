@@ -2,34 +2,24 @@ name: "Publish to Zenodo"
 description: "Publish a set of files to Zenodo"
 inputs:
     files:
-        description: "List of files or glob patterns to publish"
+        description: "List of files or glob patterns to publish. Cannot include directories, so create a zip file if you need to include directories."
         required: true
-    zenodo_token:
-        description: "Zenodo access token"
-        required: true
-    github_token:
-        description: "GitHub access token"
-        required: true
+    citation:
+      description: "Path to CITATION.cff file, used to create `.zenodo.json` metadata file."
+      required: true
+      default: "CITATION.cff"
     sandbox:
-        description: "Publish to Zenodo sandbox"
+        description: "If true, publish to Zenodo sandbox."
         required: false
         default: "true"
     publish:
-        description: "Publish the record"
+        description: "Publish the record. If false, you'll need to go to Zenodo, review the record, and publish it manually."
         required: false
         default: "false"
     concept:
-        description: "Create the new deposition as a new version in this concept"
+        description: "Create the deposition as a new version of this concept DOI (e.g. `12345678`)."
         required: false
         default: ''
-    upsert_doi:
-        description: "Upsert DOI"
-        required: false
-        default: "false"
-    upsert_location:
-        description: "Upsert location"
-        required: false
-        default: doi
     verbose:
         description: "Verbose output"
         required: false
@@ -53,12 +43,9 @@ runs:
     - name: Create a zenodo metadata file from CITATION.cff
       uses: citation-file-format/cffconvert-github-action@2.0.0
       with:
-        args: "-f zenodo -o .zenodo.json"
+        args: "-i ${{ inputs.citation }} -f zenodo -o .zenodo.json"
 
     - name: Create a draft snapshot of your repository figure content.
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-        ZENODO_SANDBOX_ACCESS_TOKEN: ${{ inputs.zenodo_token }}
       uses: zenodraft/action@0.13.3
       with:
         concept: ${{ inputs.concept }}
@@ -66,6 +53,4 @@ runs:
         metadata: .zenodo.json
         publish: ${{ inputs.publish }}
         sandbox: ${{ inputs.sandbox }}
-        upsert-doi: ${{ inputs.upsert_doi }}
-        upsert-location: ${{ inputs.upsert_location }}
         verbose: ${{ inputs.verbose }}
