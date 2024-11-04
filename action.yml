@@ -40,10 +40,19 @@ runs:
       run: echo "${{ steps.globber.outputs.paths }}"
       shell: bash
 
+    - name: Validate CITATION.cff
+      uses: citation-file-format/cffconvert-github-action@2.0.0
+      with:
+        args: "-i ${{ inputs.citation }} --validate"
+
     - name: Create a zenodo metadata file from CITATION.cff
       uses: citation-file-format/cffconvert-github-action@2.0.0
       with:
         args: "-i ${{ inputs.citation }} -f zenodo -o .zenodo.json"
+
+    - name: Print zenodo metadata
+      run: cat .zenodo.json
+      shell: bash
 
     - name: Create a draft snapshot of your repository figure content.
       uses: zenodraft/action@0.13.3
