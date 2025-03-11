@@ -1,2 +1,3 @@
 # publish-zenodo
-Publish designated files to Zenodo
+
+Publish designated files to Zenodo.

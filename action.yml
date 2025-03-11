@@ -1,13 +1,12 @@
 name: "Publish to Zenodo"
-description: "Publish a set of files to Zenodo"
+description: "Publish a set of files to Zenodo."
 inputs:
     files:
         description: "List of files or glob patterns to publish. Cannot include directories, so create a zip file if you need to include directories."
         required: true
-    citation:
-      description: "Path to CITATION.cff file, used to create `.zenodo.json` metadata file."
+    metadata:
+      description: "Path to metadata YAML file, used to create `.zenodo.json` metadata file. Use Zenodo conventions."
       required: true
-      default: "CITATION.cff"
     sandbox:
         description: "If true, publish to Zenodo sandbox."
         required: false
@@ -40,15 +39,19 @@ runs:
       run: echo "${{ steps.globber.outputs.paths }}"
       shell: bash
 
-    - name: Validate CITATION.cff
-      uses: citation-file-format/cffconvert-github-action@2.0.0
+    - name: Validate metadata against Zenodo schema
+      uses: GrantBirki/json-yaml-validate@v3.2.1
       with:
-        args: "-i ${{ inputs.citation }} --validate"
+        comment: "true" # enable comment mode
+        files: |
+          ${{ inputs.metadata }}
+        yaml_as_json: "true"
+        json_schema: .schema/zenodo/0.3.0/schema.json
 
-    - name: Create a zenodo metadata file from CITATION.cff
-      uses: citation-file-format/cffconvert-github-action@2.0.0
+    - name: Convert metadata YAML to .zenodo.json
+      uses: mikefarah/yq@master
       with:
-        args: "-i ${{ inputs.citation }} -f zenodo -o .zenodo.json"
+        cmd: cat ${{ inputs.metadata }} | yq e -o=json - > .zenodo.json
 
     - name: Print zenodo metadata
       run: cat .zenodo.json
