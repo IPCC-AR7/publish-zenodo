@@ -46,7 +46,7 @@ runs:
         files: |
           ${{ inputs.metadata }}
         yaml_as_json: "true"
-        json_schema: .schema/zenodo/0.3.0/schema.json
+        json_schema: schema/zenodo/0.3.0/schema.json
 
     - name: Convert metadata YAML to .zenodo.json
       uses: mikefarah/yq@master
